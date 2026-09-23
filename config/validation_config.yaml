@@ -1,0 +1,30 @@
+# ==============================================================================
+# SIH 2026: VALIDATION & CALIBRATED ABSTENTION CONFIGURATION
+# Configured thresholds for Physics Guard, Claim Entailment, and Abstention
+# ==============================================================================
+
+physics_guard:
+  max_plausible_corrosion_rate_mm_yr: 15.0
+  min_plausible_thickness_mm: 0.1
+  max_plausible_thickness_mm: 350.0
+  llm_numerical_divergence_tolerance_pct: 2.0  # Mismatch > 2% triggers HARD FAIL
+  enforce_api510_half_life: true
+  block_deliverable_on_violation: true
+
+claim_verifier:
+  min_groundedness_score: 0.85
+  flag_unsupported_claims: true
+  unverified_badge: "[UNVERIFIED CLAIM — NOT GROUNDED IN SOURCE DOCUMENTS]"
+
+abstention:
+  min_overall_confidence_threshold: 0.80  # Below 0.80 triggers formal abstention
+  weights:
+    ocr_confidence: 0.25
+    field_completeness: 0.35
+    retrieval_margin: 0.20
+    physics_consistency: 0.20
+  mandatory_fields:
+    - equipment_tag
+    - measured_thickness
+    - previous_thickness
+    - design_minimum

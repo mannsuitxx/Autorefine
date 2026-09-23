@@ -1,0 +1,43 @@
+{
+  "Equipment_Tag": "V-101",
+  "Equipment_Name": "Crude Atmospheric Fractionator Reflux Drum",
+  "Design_Code": "ASME Sec VIII Div 1",
+  "Design_Pressure_bar": 15.0,
+  "Design_Temperature_C": 220.0,
+  "Material_Specification": "SA-516 Grade 70",
+  "Nominal_Original_Thickness_mm": 18.0,
+  "Minimum_Allowable_Thickness_t_req_mm": 12.4,
+  "Corrosion_Allowance_mm": 3.0,
+  "Inspection_Records": [
+    {
+      "Date": "2016-04-10",
+      "Measured_Thickness_mm": 17.8,
+      "Location": "Shell Course 1 (Top)"
+    },
+    {
+      "Date": "2019-05-15",
+      "Measured_Thickness_mm": 16.9,
+      "Location": "Shell Course 1 (Top)"
+    },
+    {
+      "Date": "2022-06-20",
+      "Measured_Thickness_mm": 15.8,
+      "Location": "Shell Course 1 (Top)"
+    },
+    {
+      "Date": "2026-01-18",
+      "Measured_Thickness_mm": 14.2,
+      "Location": "Shell Course 1 (Top)"
+    },
+    {
+      "Date": "2026-01-18",
+      "Measured_Thickness_mm": 13.1,
+      "Location": "Shell Course 3 (Liquid-Vapor Interface)"
+    },
+    {
+      "Date": "2026-01-18",
+      "Measured_Thickness_mm": 14.6,
+      "Location": "Bottom Head Ellipsoidal"
+    }
+  ]
+}

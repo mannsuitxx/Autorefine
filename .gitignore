@@ -1,0 +1,51 @@
+# Python Bytecode & Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Virtual Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Runtime Logs, Checkpoints & Ephemeral Test Runs
+*.log
+data/checkpoints/*.db
+data/checkpoints/*.sqlite
+data/checkpoints/*.sqlite-journal
+data/trajectories/*.json
+data/uploads/*
+!data/uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
+sandbox/*
+!sandbox/.gitkeep
+
+# Archives and Duplicate Bundles
+*.zip
+*.tar.gz
+sih2026_sovereign_workbench/
+
+# OS and IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Frontend / Node
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.impeccable/
+
+# Graphify Cache
+graphify-out/cache/

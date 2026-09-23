@@ -1,0 +1,118 @@
+# ==============================================================================
+# SIH 2026: HARDWARE-ADAPTIVE MODEL REGISTRY (TASK L20)
+# Project PS-26117 · Sovereign On-Premise Agentic AI Workbench (MRPL)
+# Multi-Profile Configuration for Laptop vs High-Resource Venue Deployments
+# ==============================================================================
+
+version: "3.0.0"
+runtime:
+  provider: "Ollama Localhost Runtime"
+  host: "http://127.0.0.1:11434"
+  airgap_enforced: true
+  allowed_hosts:
+    - "127.0.0.1"
+    - "localhost"
+    - "0.0.0.0"
+
+profiles:
+  STANDARD:
+    description: "Laptop-safe profile for edge workstations with < 8GB VRAM or < 24GB RAM"
+    min_system_ram_gb: 8.0
+    min_system_vram_gb: 0.0
+    models:
+      general_reasoning_multimodal:
+        ollama_tag: "qwen2.5:7b"
+        fallback_tag: "qwen2.5:7b"
+        license: "Apache 2.0"
+        huggingface_source: "Qwen/Qwen2.5-7B-Instruct / Qwen3.5-9B"
+        role: "General Reasoning & SOP Compliance"
+        min_ram_gb: 6.0
+        min_vram_gb: 0.0
+        enabled: true
+      coding_agent:
+        ollama_tag: "qwen2.5:7b"
+        fallback_tag: "qwen2.5:7b"
+        license: "Apache 2.0"
+        huggingface_source: "Qwen/Qwen2.5-Coder-7B-Instruct"
+        role: "Engineering Math, Code Sandbox & Telemetry Processing"
+        min_ram_gb: 6.0
+        min_vram_gb: 0.0
+        enabled: true
+      deep_reasoning_calc:
+        ollama_tag: "qwen2.5:7b"
+        fallback_tag: "qwen2.5:7b"
+        license: "MIT"
+        huggingface_source: "deepseek-ai/DeepSeek-R1-Distill-Qwen-8B"
+        role: "Deep Mathematical Reasoning & Physics Calculations"
+        min_ram_gb: 6.0
+        min_vram_gb: 0.0
+        enabled: true
+      documents_vision:
+        ollama_tag: "moondream"
+        fallback_tag: "moondream:latest"
+        license: "Apache 2.0"
+        huggingface_source: "vikhyatk/moondream2"
+        role: "Visual Inspection, P&ID Schematic & Handwriting OCR"
+        min_ram_gb: 3.0
+        min_vram_gb: 0.0
+        enabled: true
+      cpu_fallback:
+        ollama_tag: "qwen2.5:7b"
+        fallback_tag: "qwen2.5:7b"
+        license: "MIT"
+        huggingface_source: "microsoft/Phi-4-mini-instruct"
+        role: "Ultra-Light CPU Fallback & Rapid Classification"
+        min_ram_gb: 2.0
+        min_vram_gb: 0.0
+        enabled: true
+
+  HIGH_RESOURCE:
+    description: "High-Resource Venue profile for dedicated servers with >= 8GB VRAM and >= 24GB RAM"
+    min_system_ram_gb: 24.0
+    min_system_vram_gb: 8.0
+    models:
+      general_reasoning_multimodal:
+        ollama_tag: "qwen3.5:9b"
+        fallback_tag: "qwen3.5:9b"
+        license: "Apache 2.0"
+        huggingface_source: "Qwen/Qwen3.5-9B"
+        role: "General Reasoning & SOP Compliance"
+        min_ram_gb: 12.0
+        min_vram_gb: 6.0
+        enabled: true
+      coding_agent:
+        ollama_tag: "devstral-small:24b"
+        fallback_tag: "qwen2.5-coder:7b"
+        license: "Apache 2.0"
+        huggingface_source: "mistralai/Devstral-Small-24B"
+        role: "Complex Industrial Refactoring & Sandbox Code Generation"
+        min_ram_gb: 18.0
+        min_vram_gb: 8.0
+        enabled: true
+      deep_reasoning_calc:
+        ollama_tag: "deepseek-r1-distill:14b"
+        fallback_tag: "deepseek-r1-distill:8b"
+        license: "MIT"
+        huggingface_source: "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B"
+        role: "High-Precision Thermodynamic & Finite Element Proofs"
+        min_ram_gb: 16.0
+        min_vram_gb: 8.0
+        enabled: true
+      documents_vision:
+        ollama_tag: "mistral-small3.1:24b"
+        fallback_tag: "moondream"
+        license: "Apache 2.0"
+        huggingface_source: "mistralai/Mistral-Small-24B-Instruct-2501"
+        role: "Multi-Page High-Res Engineering Drawing & P&ID Vision"
+        min_ram_gb: 18.0
+        min_vram_gb: 8.0
+        enabled: true
+      cpu_fallback:
+        ollama_tag: "phi-4-mini"
+        fallback_tag: "phi-4-mini"
+        license: "MIT"
+        huggingface_source: "microsoft/Phi-4-mini-instruct"
+        role: "Ultra-Light CPU Fallback & Rapid Classification"
+        min_ram_gb: 3.0
+        min_vram_gb: 0.0
+        enabled: true

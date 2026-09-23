@@ -1,0 +1,108 @@
+{
+  "ablation_table": [
+    {
+      "Configuration": "Full Workbench (Baseline)",
+      "Overall Accuracy": "96.7%",
+      "Extraction Acc": "100.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "100.0%",
+      "Latency (ms)": "1.7"
+    },
+    {
+      "Configuration": "No Constrained Decoding",
+      "Overall Accuracy": "90.0%",
+      "Extraction Acc": "75.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "100.0%",
+      "Latency (ms)": "0.2"
+    },
+    {
+      "Configuration": "No Cross-Encoder Reranking",
+      "Overall Accuracy": "96.7%",
+      "Extraction Acc": "100.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "100.0%",
+      "Latency (ms)": "0.2"
+    },
+    {
+      "Configuration": "No Knowledge Graph (Pure Vector)",
+      "Overall Accuracy": "96.7%",
+      "Extraction Acc": "100.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "100.0%",
+      "Latency (ms)": "0.2"
+    },
+    {
+      "Configuration": "No Deterministic Physics Guard",
+      "Overall Accuracy": "86.7%",
+      "Extraction Acc": "100.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "40.0%",
+      "Latency (ms)": "0.2"
+    },
+    {
+      "Configuration": "No Claim Entailment Verifier",
+      "Overall Accuracy": "96.7%",
+      "Extraction Acc": "100.0%",
+      "Retrieval Acc": "83.3%",
+      "Calculation Acc": "100.0%",
+      "Abstention Acc": "100.0%",
+      "Adversarial Acc": "100.0%",
+      "Latency (ms)": "0.2"
+    }
+  ],
+  "configurations": {
+    "Full Workbench (Baseline)": {
+      "constrained_decoding": true,
+      "reranking": true,
+      "graph_traversal": true,
+      "physics_guard": true,
+      "claim_verifier": true
+    },
+    "No Constrained Decoding": {
+      "constrained_decoding": false,
+      "reranking": true,
+      "graph_traversal": true,
+      "physics_guard": true,
+      "claim_verifier": true
+    },
+    "No Cross-Encoder Reranking": {
+      "constrained_decoding": true,
+      "reranking": false,
+      "graph_traversal": true,
+      "physics_guard": true,
+      "claim_verifier": true
+    },
+    "No Knowledge Graph (Pure Vector)": {
+      "constrained_decoding": true,
+      "reranking": true,
+      "graph_traversal": false,
+      "physics_guard": true,
+      "claim_verifier": true
+    },
+    "No Deterministic Physics Guard": {
+      "constrained_decoding": true,
+      "reranking": true,
+      "graph_traversal": true,
+      "physics_guard": false,
+      "claim_verifier": true
+    },
+    "No Claim Entailment Verifier": {
+      "constrained_decoding": true,
+      "reranking": true,
+      "graph_traversal": true,
+      "physics_guard": true,
+      "claim_verifier": false
+    }
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "node_type": "PlantUnit",
+      "label": "Crude Distillation Unit 1 (CDU-1)",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "Unit boundary CDU-1",
+      "capacity_bpd": 150000,
+      "id": "UNIT:CDU-1"
+    },
+    {
+      "node_type": "PlantUnit",
+      "label": "Crude Distillation Unit 2 (CDU-2)",
+      "source_doc": "MRPL_P&ID_CDU_205.svg",
+      "source_span": "Unit boundary CDU-2",
+      "capacity_bpd": 180000,
+      "id": "UNIT:CDU-2"
+    },
+    {
+      "node_type": "PlantUnit",
+      "label": "Hydrocracker Unit (HOU)",
+      "source_doc": "MRPL_P&ID_HOU_302.svg",
+      "source_span": "Unit boundary HOU",
+      "capacity_bpd": 90000,
+      "id": "UNIT:HOU"
+    },
+    {
+      "node_type": "Equipment",
+      "label": "V-101 Crude Column Reflux Drum",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "EQUIPMENT: V-101 (Crude Column Reflux Drum)",
+      "tag": "V-101",
+      "design_pressure_bar": 18.5,
+      "id": "EQ:V-101"
+    },
+    {
+      "node_type": "Equipment",
+      "label": "C-101 Atmospheric Fractionation Column",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "Main crude distillation tower C-101",
+      "tag": "C-101",
+      "design_pressure_bar": 4.5,
+      "id": "EQ:C-101"
+    },
+    {
+      "node_type": "Equipment",
+      "label": "V-205 Debutanizer Overhead Accumulator",
+      "source_doc": "V205_Different_Inspection_Report.png",
+      "source_span": "EQUIPMENT: V.205 (Debutanizer Overhead Accumulator)",
+      "tag": "V-205",
+      "design_pressure_bar": 12.0,
+      "id": "EQ:V-205"
+    },
+    {
+      "node_type": "Equipment",
+      "label": "E-104 Crude Pre-Heat Exchanger",
+      "source_doc": "E104_Heat_Exchanger_Operating_Log.csv",
+      "source_span": "Heat Exchanger E-104 shell & tube",
+      "tag": "E-104",
+      "shell_design_bar": 25.0,
+      "id": "EQ:E-104"
+    },
+    {
+      "node_type": "Equipment",
+      "label": "T-302 Kerosene Flash Drum",
+      "source_doc": "Different_Labels_Inspection_Report.png",
+      "source_span": "Asset ID: 802 / T-302 Kerosene Flash Drum",
+      "tag": "T-302",
+      "design_pressure_bar": 15.0,
+      "id": "EQ:T-302"
+    },
+    {
+      "node_type": "Component",
+      "label": "V-101 Shell Course 3",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Shell Course 3: Nominal 14.6 mm",
+      "nominal_mm": 14.6,
+      "min_req_mm": 12.4,
+      "id": "COMP:V101_SHELL_C3"
+    },
+    {
+      "node_type": "Component",
+      "label": "V-101 Top Head",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Head Top: Nominal 14.6 mm",
+      "nominal_mm": 14.6,
+      "min_req_mm": 12.0,
+      "id": "COMP:V101_HEAD_TOP"
+    },
+    {
+      "node_type": "Component",
+      "label": "C-101 Flash Zone Section",
+      "source_doc": "MRPL_SOP_042_Hot_Work_Protocol.md",
+      "source_span": "Section 4.1: Column Flash Zone Tray 1-4",
+      "nominal_mm": 25.0,
+      "min_req_mm": 18.0,
+      "id": "COMP:C101_FLASH_ZONE"
+    },
+    {
+      "node_type": "Component",
+      "label": "V-205 Shell Course 1",
+      "source_doc": "V205_Different_Inspection_Report.png",
+      "source_span": "Shell Course 1: Nominal 22.0 mm",
+      "nominal_mm": 22.0,
+      "min_req_mm": 14.0,
+      "id": "COMP:V205_SHELL_C1"
+    },
+    {
+      "node_type": "Material",
+      "label": "SA-516 Gr. 70 Carbon Steel",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "Material Spec SA-516 Gr 70",
+      "yield_mpa": 260,
+      "tensile_mpa": 485,
+      "id": "MAT:CS_SA516"
+    },
+    {
+      "node_type": "Material",
+      "label": "316L Stainless Steel Cladding",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "Corrosion Resistant Overlay Alloy 316L",
+      "moly_pct": 2.5,
+      "id": "MAT:SS_316L"
+    },
+    {
+      "node_type": "DamageMechanism",
+      "label": "Naphthenic Acid Corrosion (API 571 \u00a73.46)",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "API 571 Section 3.46: Naphthenic Acid Corrosion in Heavy Crude",
+      "api571_ref": "3.46",
+      "temp_range_c": "220-400 C",
+      "id": "DM:NAPHTHENIC_ACID"
+    },
+    {
+      "node_type": "DamageMechanism",
+      "label": "Wet H2S / Sour Water Pitting (API 571 \u00a73.58)",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "API 571 Section 3.58: Wet H2S Damage and Pitting in Sour Services",
+      "api571_ref": "3.58",
+      "id": "DM:H2S_PITTING"
+    },
+    {
+      "node_type": "Defect",
+      "label": "Accelerated Wall Thinning on V-101 Course 3 (13.1 mm)",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Course 3: Actual measured 13.1 mm (Remaining life 1.63 yrs)",
+      "measured_mm": 13.1,
+      "rate_mm_yr": 0.429,
+      "id": "DEF:V101_SHELL3_THINNING"
+    },
+    {
+      "node_type": "Defect",
+      "label": "Localized Flow-Induced Grooving on C-101 Tray Support",
+      "source_doc": "MRPL_SOP_042_Hot_Work_Protocol.md",
+      "source_span": "Inspection Log 2025: Flow grooving near nozzle N3",
+      "measured_mm": 18.2,
+      "id": "DEF:C101_FLASH_GROOVING"
+    },
+    {
+      "node_type": "RecommendedAction",
+      "label": "Internal 316L Weld Overlay Restoration",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "API 510 \u00a77.1.1: Restoring wall thickness with weld metal buildup or cladding overlay",
+      "procedure_code": "MRPL-WPS-316L-04",
+      "id": "ACT:WELD_OVERLAY_316L"
+    },
+    {
+      "node_type": "RecommendedAction",
+      "label": "Execution under Class-A Hot Work Safety Permit",
+      "source_doc": "OISD_STD_105_Work_Permit_System.md",
+      "source_span": "OISD-STD-105 \u00a76.2: Pre-work gas testing, LEL continuous monitoring, fire watch",
+      "permit_class": "Class A Hot Work",
+      "id": "ACT:HOT_WORK_PERMIT"
+    },
+    {
+      "node_type": "StandardClause",
+      "label": "API-510 \u00a77.1.1 (Pressure Vessel Repairs & Alterations)",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "API 510 Section 7.1.1 specifies approved permanent repairs for thinned pressure boundaries",
+      "standard": "API-510",
+      "section": "7.1.1",
+      "id": "STD:API510_SEC7"
+    },
+    {
+      "node_type": "StandardClause",
+      "label": "OISD-STD-105 \u00a76.2 (Permit-to-Work Hot Work Authorization)",
+      "source_doc": "OISD_STD_105_Work_Permit_System.md",
+      "source_span": "OISD-STD-105 Section 6.2 mandates combustible gas testing < 1% LEL before welding on hydrocarbon vessels",
+      "standard": "OISD-STD-105",
+      "section": "6.2",
+      "id": "STD:OISD105_SEC6"
+    }
+  ],
+  "edges": [
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "CDU-1 Process Stream contains V-101",
+      "source": "UNIT:CDU-1",
+      "target": "EQ:V-101"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "CDU-1 Process Stream contains C-101",
+      "source": "UNIT:CDU-1",
+      "target": "EQ:C-101"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "CDU-1 Process Stream contains E-104",
+      "source": "UNIT:CDU-1",
+      "target": "EQ:E-104"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_CDU_205.svg",
+      "source_span": "CDU-2 Process Stream contains V-205",
+      "source": "UNIT:CDU-2",
+      "target": "EQ:V-205"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_HOU_302.svg",
+      "source_span": "HOU Process Stream contains T-302",
+      "source": "UNIT:HOU",
+      "target": "EQ:T-302"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "V-101 contains Shell Course 3",
+      "source": "EQ:V-101",
+      "target": "COMP:V101_SHELL_C3"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "V-101 contains Top Head",
+      "source": "EQ:V-101",
+      "target": "COMP:V101_HEAD_TOP"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "MRPL_P&ID_CDU_101.svg",
+      "source_span": "C-101 contains Flash Zone Section",
+      "source": "EQ:C-101",
+      "target": "COMP:C101_FLASH_ZONE"
+    },
+    {
+      "relation": "CONTAINS",
+      "source_doc": "V205_Different_Inspection_Report.png",
+      "source_span": "V-205 contains Shell Course 1",
+      "source": "EQ:V-205",
+      "target": "COMP:V205_SHELL_C1"
+    },
+    {
+      "relation": "MADE_OF",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "V-101 Shell 3 constructed from SA-516 Gr 70",
+      "source": "COMP:V101_SHELL_C3",
+      "target": "MAT:CS_SA516"
+    },
+    {
+      "relation": "MADE_OF",
+      "source_doc": "MRPL_SOP_042_Hot_Work_Protocol.md",
+      "source_span": "C-101 Flash zone carbon steel substrate",
+      "source": "COMP:C101_FLASH_ZONE",
+      "target": "MAT:CS_SA516"
+    },
+    {
+      "relation": "MADE_OF",
+      "source_doc": "V205_Different_Inspection_Report.png",
+      "source_span": "V-205 Shell 1 carbon steel",
+      "source": "COMP:V205_SHELL_C1",
+      "target": "MAT:CS_SA516"
+    },
+    {
+      "relation": "SUSCEPTIBLE_TO",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "Unclad carbon steel SA-516 is highly susceptible to high-TAN crude naphthenic acid attack above 230 C",
+      "source": "MAT:CS_SA516",
+      "target": "DM:NAPHTHENIC_ACID"
+    },
+    {
+      "relation": "SUSCEPTIBLE_TO",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "Carbon steel in wet H2S sour condensate service susceptible to local pitting",
+      "source": "MAT:CS_SA516",
+      "target": "DM:H2S_PITTING"
+    },
+    {
+      "relation": "OBSERVED_ON",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Defect observed on Shell Course 3 during 2026 Turnaround",
+      "source": "DEF:V101_SHELL3_THINNING",
+      "target": "COMP:V101_SHELL_C3"
+    },
+    {
+      "relation": "CAUSED_BY",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Metallurgical finding: high-temperature organic acid thinning consistent with Naphthenic Acid Corrosion",
+      "source": "DEF:V101_SHELL3_THINNING",
+      "target": "DM:NAPHTHENIC_ACID"
+    },
+    {
+      "relation": "MITIGATED_BY",
+      "source_doc": "CDU_V101_Inspection_Turnaround_Report.png",
+      "source_span": "Corrosion mitigation recommendation: Weld overlay repair",
+      "source": "DEF:V101_SHELL3_THINNING",
+      "target": "ACT:WELD_OVERLAY_316L"
+    },
+    {
+      "relation": "OBSERVED_ON",
+      "source_doc": "MRPL_SOP_042_Hot_Work_Protocol.md",
+      "source_span": "Grooving observed in column flash section",
+      "source": "DEF:C101_FLASH_GROOVING",
+      "target": "COMP:C101_FLASH_ZONE"
+    },
+    {
+      "relation": "CAUSED_BY",
+      "source_doc": "MRPL_SOP_042_Hot_Work_Protocol.md",
+      "source_span": "High TAN crude wash velocity corrosion",
+      "source": "DEF:C101_FLASH_GROOVING",
+      "target": "DM:NAPHTHENIC_ACID"
+    },
+    {
+      "relation": "GOVERNED_BY",
+      "source_doc": "API_510_Pressure_Vessel_Inspection_Code.md",
+      "source_span": "Weld metal restoration is governed by API-510 \u00a77.1.1 design requirements",
+      "source": "ACT:WELD_OVERLAY_316L",
+      "target": "STD:API510_SEC7"
+    },
+    {
+      "relation": "REQUIRES",
+      "source_doc": "OISD_STD_105_Work_Permit_System.md",
+      "source_span": "Welding repair inside confined refinery vessel requires active Class-A Hot Work Permit",
+      "source": "ACT:WELD_OVERLAY_316L",
+      "target": "ACT:HOT_WORK_PERMIT"
+    },
+    {
+      "relation": "GOVERNED_BY",
+      "source_doc": "OISD_STD_105_Work_Permit_System.md",
+      "source_span": "Hot work execution is strictly governed by OISD-STD-105 \u00a76.2 mandatory safety controls",
+      "source": "ACT:HOT_WORK_PERMIT",
+      "target": "STD:OISD105_SEC6"
+    }
+  ]
+}
