@@ -211,8 +211,8 @@ class DocumentGeneratorTool:
             merkle_root, sig_hex, count = audit_ledger.compute_session_merkle_root(traj_id)
         except Exception:
             merkle_root = hashlib.sha256(doc_no.encode()).hexdigest()
-            sig_hex = "ED25519_AIRGAP_SIGNED"
-            count = 1
+            sig_hex = "UNVERIFIED_MERKLE_ROOT"
+            count = 0
 
         doc.add_paragraph("\n7. CRYPTOGRAPHIC PROVENANCE & MERKLE AUDIT TRAIL (TASK L11):")
         doc.add_paragraph(

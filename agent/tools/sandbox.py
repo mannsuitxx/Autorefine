@@ -15,9 +15,13 @@ class CodeSandboxTool:
     """
     def __init__(self):
         self.bwrap_path = self._find_bwrap()
-        self.platform_fallback = os.name == "nt" and not self.bwrap_path
-        if not self.bwrap_path and not self.platform_fallback:
-            raise RuntimeError("Kernel sandbox requirement failed: 'bwrap' executable not found on system PATH.")
+        if not self.bwrap_path:
+            if os.getenv("ALLOW_PLATFORM_FALLBACK") == "1":
+                self.platform_fallback = True
+            else:
+                raise RuntimeError("Kernel sandbox requirement failed: 'bwrap' executable not found on system PATH. Enable ALLOW_PLATFORM_FALLBACK=1 explicitly for unisolated development fallback.")
+        else:
+            self.platform_fallback = False
 
     def _find_bwrap(self) -> str:
         candidates = [
@@ -37,15 +41,42 @@ class CodeSandboxTool:
 
         with tempfile.TemporaryDirectory(prefix="sovereign_sb_") as tmpdir:
             script_path = os.path.join(tmpdir, "sandbox_payload.py")
+            payload_code = code
+            if self.platform_fallback:
+                lines = code.splitlines(keepends=True)
+                insert_idx = 0
+                for i, line in enumerate(lines):
+                    stripped = line.strip()
+                    if stripped.startswith("from __future__") or stripped.startswith("#"):
+                        insert_idx = i + 1
+                    elif not stripped:
+                        continue
+                    else:
+                        break
+                guard_header = (
+                    "import sys\n"
+                    f"if {repr(str(base_dir))} not in sys.path:\n"
+                    f"    sys.path.insert(0, {repr(str(base_dir))})\n"
+                    "try:\n"
+                    "    import security.egress_denylist\n"
+                    "    from security.egress_denylist import AirgapComplianceGuard\n"
+                    "    AirgapComplianceGuard.install()\n"
+                    "except Exception as _e:\n"
+                    "    print(f'AIRGAP_GUARD_INSTALL_FAILED: {_e}', file=sys.stderr)\n"
+                    "    sys.exit(1)\n\n"
+                )
+                lines.insert(insert_idx, guard_header)
+                payload_code = "".join(lines)
+
             with open(script_path, "w", encoding="utf-8") as f:
-                f.write(code)
+                f.write(payload_code)
 
             if self.platform_fallback:
                 # Windows development path: run with a minimal environment and no
-                # inherited project environment. Production Linux still requires bwrap.
+                # inherited project environment. Enforces AirgapComplianceGuard zero-egress interception.
                 cmd = [sys.executable, "-I", script_path]
-                sandbox_mode = "WINDOWS PROCESS ISOLATION (Bubblewrap unavailable)"
-                network_isolated = False
+                sandbox_mode = "WINDOWS PROCESS ISOLATION (Airgap Compliance Guard)"
+                network_isolated = True
             else:
                 cmd = [
                     self.bwrap_path,

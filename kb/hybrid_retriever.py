@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-SIH 2026: GRAPHRAG HYBRID RETRIEVER & CROSS-ENCODER RERANKER (TASK L12)
+SIH 2026: GRAPHRAG HYBRID RETRIEVER & TOKEN OVERLAP RERANKER (TASK L12)
 Project PS-26117 · Sovereign On-Premise Agentic AI Workbench (MRPL)
-Fuses Dense Vector Search, BM25 Keyword Search, and Knowledge Graph Multi-Hop Traversal.
+Fuses BM25 Keyword Search, Token Overlap Matching, and Knowledge Graph Multi-Hop Traversal.
 ================================================================================
 """
 
@@ -160,9 +160,9 @@ class HybridGraphRetriever:
             })
         return results
 
-    def _cross_encoder_rerank(self, query: str, candidates: List[Dict[str, Any]], top_k: int = 5) -> List[Dict[str, Any]]:
+    def _token_overlap_rerank(self, query: str, candidates: List[Dict[str, Any]], top_k: int = 5) -> List[Dict[str, Any]]:
         """
-        Local cross-encoder reranker scoring exact token overlap, regulatory relevance, and technical intent.
+        Token overlap & heuristic domain reranker scoring exact token matching, regulatory relevance, and domain entity weights.
         """
         q_tokens = set(re.findall(r'\w+', query.lower()))
         reranked = []
@@ -191,6 +191,8 @@ class HybridGraphRetriever:
 
         reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
         return reranked[:top_k]
+
+    _cross_encoder_rerank = _token_overlap_rerank
 
     def retrieve(
         self,
@@ -242,8 +244,8 @@ class HybridGraphRetriever:
         fused_candidates = list(fused_pool.values())
         fused_candidates.sort(key=lambda x: x.get("fused_score", 0.0), reverse=True)
 
-        # Cross-Encoder Rerank top candidates
-        top_reranked = self._cross_encoder_rerank(query, fused_candidates[:40], top_k=top_k)
+        # Token Overlap & Heuristic Domain Rerank top candidates
+        top_reranked = self._token_overlap_rerank(query, fused_candidates[:40], top_k=top_k)
         elapsed_ms = round((time.time() - t0) * 1000, 2)
 
         return {

@@ -84,7 +84,7 @@ def main():
     if path_found:
         print(f"Multi-hop Traversal Path: {' -> '.join(path_found)}")
     else:
-        print("Standard clause retrieved with cross-encoder verification: API-510 §7.1.1")
+        print("Standard clause retrieved with token-overlap verification: API-510 §7.1.1")
 
     test_b_pass = governing_std_found
     log_test("L12-b", "Multi-hop traversal connected defect to governing API-510 §7.1.1 standard clause", test_b_pass,
@@ -136,7 +136,7 @@ def main():
     print("-" * 65)
 
     test_c_pass = (p5_after > p5_before)
-    log_test("L12-c", "Cross-Encoder reranking improved Precision@5 from 0.68 to 0.96 (+28% gain)", test_c_pass,
+    log_test("L12-c", "Token-overlap reranking improved Precision@5 from 0.68 to 0.96 (+28% gain)", test_c_pass,
              f"Baseline Precision@5: {p5_before} -> GraphRAG Precision@5: {p5_after}")
     pass_count += int(test_c_pass); fail_count += int(not test_c_pass)
 

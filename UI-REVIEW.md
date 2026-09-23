@@ -39,5 +39,5 @@
 
 ## Files Audited
 
-- `frontend/console.html`
-- `frontend/app.py`
+- `frontend/react/src/main.jsx`
+- `frontend/react/src/styles.css`

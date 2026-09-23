@@ -61,12 +61,20 @@ class VisionOCRTool:
         except ImportError:
             self.available = False
 
-    def transcribe_handwriting_with_vision(self, file_path: str) -> Dict[str, Any]:
+    def transcribe_handwriting_with_vision(self, file_path: str, model_tag: Optional[str] = None) -> Dict[str, Any]:
         """
         Transcribes handwritten or low-confidence documents using local multimodal vision models.
         """
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Image file not found: {file_path}")
+
+        if not model_tag:
+            try:
+                from agent.router import router
+                model_tag = router.get_role_model("documents_vision").get("ollama_tag", "moondream:latest")
+            except Exception:
+                model_tag = "moondream:latest"
+        v_model = model_tag
 
         try:
             with open(file_path, "rb") as f:
@@ -79,7 +87,7 @@ class VisionOCRTool:
             )
 
             req_payload = {
-                "model": "moondream:latest",
+                "model": v_model,
                 "prompt": prompt,
                 "images": [b64_img],
                 "stream": False,
@@ -103,6 +111,7 @@ class VisionOCRTool:
                     return {
                         "status": "ABSTAIN",
                         "method": "VISION_HANDWRITING",
+                        "model_used": v_model,
                         "is_abstain": True,
                         "raw_text": "",
                         "confidence_score": 0.1,
@@ -112,6 +121,7 @@ class VisionOCRTool:
                 return {
                     "status": "SUCCESS",
                     "method": "VISION_HANDWRITING",
+                    "model_used": v_model,
                     "is_abstain": False,
                     "raw_text": text,
                     "confidence_score": 0.88,
@@ -122,12 +132,13 @@ class VisionOCRTool:
             return {
                 "status": "ABSTAIN",
                 "method": "VISION_HANDWRITING",
+                "model_used": v_model,
                 "is_abstain": True,
                 "raw_text": "",
-                "abstention_reason": f"Vision model handwriting extraction aborted / degraded image: {str(e)}"
+                "abstention_reason": f"Vision model ({v_model}) handwriting extraction aborted / degraded image: {str(e)}"
             }
 
-    def extract_inspection_findings(self, file_path: str, preprocessing_mode: str = "standard") -> Dict[str, Any]:
+    def extract_inspection_findings(self, file_path: str, preprocessing_mode: str = "standard", model_tag: Optional[str] = None) -> Dict[str, Any]:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Inspection file not found: {file_path}")
 
@@ -155,7 +166,7 @@ class VisionOCRTool:
                     mean_conf = round(sum(confs) / len(confs), 2)
         except Exception as e:
             if not self.available:
-                vision_res = self.transcribe_handwriting_with_vision(file_path)
+                vision_res = self.transcribe_handwriting_with_vision(file_path, model_tag=model_tag)
                 if vision_res.get("status") == "SUCCESS" and vision_res.get("raw_text"):
                     raw_text = vision_res["raw_text"]
                     mean_conf = 85.0
@@ -165,6 +176,7 @@ class VisionOCRTool:
                         "document_type": "HANDWRITTEN_INSPECTION_NOTE",
                         "status": "ABSTAIN",
                         "method": "VISION_HANDWRITING",
+                        "model_used": vision_res.get("model_used"),
                         "equipment_tag": None,
                         "plant_unit": None,
                         "critical_defect": None,
@@ -178,7 +190,7 @@ class VisionOCRTool:
 
         # If confidence is low or mode is explicitly handwriting, attempt Vision Model transcription
         if preprocessing_mode == "handwriting" or (mean_conf > 0 and mean_conf < 60.0) or not raw_text:
-            vision_res = self.transcribe_handwriting_with_vision(file_path)
+            vision_res = self.transcribe_handwriting_with_vision(file_path, model_tag=model_tag)
             if vision_res.get("status") == "SUCCESS" and vision_res.get("raw_text"):
                 raw_text = vision_res["raw_text"]
                 mean_conf = max(mean_conf, 85.0)
@@ -188,6 +200,7 @@ class VisionOCRTool:
                     "document_type": "HANDWRITTEN_INSPECTION_NOTE",
                     "status": "ABSTAIN",
                     "method": "VISION_HANDWRITING",
+                    "model_used": vision_res.get("model_used"),
                     "equipment_tag": None,
                     "plant_unit": None,
                     "critical_defect": None,

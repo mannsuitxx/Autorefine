@@ -16,7 +16,8 @@ import hashlib
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+import urllib.request
 
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
@@ -27,78 +28,219 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 class AirgapAttestationEngine:
-    def __init__(self, base_dir: str = None):
+    def __init__(self, base_dir: Optional[str] = None):
         self.base_dir = Path(base_dir) if base_dir else Path(__file__).resolve().parent.parent
-        self.output_dir = self.base_dir / "outputs"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.sec_dir = self.base_dir / "data" / "security"
         self.priv_key_path = self.sec_dir / "ed25519_private.key"
         self.pub_key_path = self.base_dir / "security" / "ed25519_public.pem"
+    def _ensure_keys(self):
+        """Ensures Ed25519 private key exists or generates a new keypair."""
+        self.sec_dir.mkdir(parents=True, exist_ok=True)
+        self.pub_key_path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.priv_key_path.exists():
+            priv_key = ed25519.Ed25519PrivateKey.generate()
+            priv_pem = priv_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.PKCS8,
+                encryption_algorithm=serialization.NoEncryption()
+            )
+            pub_pem = priv_key.public_key().public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
+            with open(self.priv_key_path, "wb") as f:
+                f.write(priv_pem)
+            with open(self.pub_key_path, "wb") as f:
+                f.write(pub_pem)
 
-    def _get_model_hashes(self) -> List[Dict[str, str]]:
-        models = [
-            {"name": "qwen2.5:1.5b", "purpose": "General Reasoning & SOP Compliance", "sha256": "5c00e16eb710a9a1d13f9f4b1e5ad678a8f4c1e194827d0925e016f4ad59132c"},
-            {"name": "qwen2.5-coder:1.5b", "purpose": "Code Synthesis & Sandboxed Math", "sha256": "8a32d18471b05c93d9b049d21c4ef6a72b918360d84f1a0e8832a76f281e359a"},
-            {"name": "moondream:latest", "purpose": "Multimodal Vision & Technical OCR", "sha256": "4b6890f5c1d37452e89640989f5bc362241d71d34fbb7101569a92a5438c8241"}
-        ]
-        return models
+    def _get_model_hashes(self) -> tuple[List[Dict[str, Any]], bool]:
+        """
+        Fetches actual local Ollama model tags and hashes via local Ollama API /api/tags or local model artifacts.
+        Returns (model_list, is_verified). If inventory is unavailable, returns ([], False).
+        """
+        ollama_url = os.getenv("OLLAMA_API_URL", "http://127.0.0.1:11434")
+        try:
+            req = urllib.request.Request(f"{ollama_url}/api/tags", method="GET")
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    models = []
+                    for item in data.get("models", []):
+                        name = item.get("name", "")
+                        digest = item.get("digest", "") or item.get("sha256", "")
+                        if name:
+                            models.append({
+                                "name": name,
+                                "purpose": item.get("details", {}).get("family", "Local Open-Weight LLM"),
+                                "sha256": digest
+                            })
+                    if models:
+                        return models, True
+        except Exception:
+            pass
 
-    def _get_network_counters(self) -> Dict[str, Any]:
-        """Reads kernel network counters from /proc/net/dev if available."""
-        wan_tx, wan_rx = 0, 0
-        lo_tx, lo_rx = 0, 0
+        # Check local artifacts directory
+        for cand_dir in [self.base_dir / "data" / "models", self.base_dir / "models"]:
+            if cand_dir.exists():
+                models = []
+                for f in cand_dir.glob("*.gguf"):
+                    try:
+                        h = hashlib.sha256()
+                        with open(f, "rb") as mf:
+                            h.update(mf.read(1024 * 1024))
+                        models.append({
+                            "name": f.name,
+                            "purpose": "Local Artifact Model GGUF",
+                            "sha256": h.hexdigest()
+                        })
+                    except Exception:
+                        pass
+                if models:
+                    return models, True
+
+        return [], False
+
+    def _get_network_counters(self, sample_interval: float = 0.1) -> tuple[Dict[str, Any], bool]:
+        """
+        Measures actual network interface bytes before and after execution,
+        distinguishing loopback vs non-loopback (WAN) traffic.
+        Returns (counters_dict, is_verified).
+        """
+        try:
+            import psutil
+            net_before = psutil.net_io_counters(pernic=True)
+            if sample_interval > 0:
+                time.sleep(sample_interval)
+            net_after = psutil.net_io_counters(pernic=True)
+
+            wan_tx, wan_rx = 0, 0
+            lo_tx, lo_rx = 0, 0
+
+            for iface, after_stat in net_after.items():
+                before_stat = net_before.get(iface)
+                if before_stat:
+                    tx_delta = max(0, after_stat.bytes_sent - before_stat.bytes_sent)
+                    rx_delta = max(0, after_stat.bytes_recv - before_stat.bytes_recv)
+                    iface_lower = iface.lower()
+                    if iface_lower in ["lo", "localhost", "loopback"] or "loopback" in iface_lower:
+                        lo_tx += tx_delta
+                        lo_rx += rx_delta
+                    else:
+                        wan_tx += tx_delta
+                        wan_rx += rx_delta
+            return {
+                "wan_tx_bytes": wan_tx,
+                "wan_rx_bytes": wan_rx,
+                "loopback_tx_bytes": lo_tx,
+                "loopback_rx_bytes": lo_rx
+            }, True
+        except Exception:
+            pass
+
         proc_dev = Path("/proc/net/dev")
         if proc_dev.exists():
-            with open(proc_dev, "r") as f:
-                lines = f.readlines()[2:]
-                for line in lines:
-                    parts = line.split(":")
-                    if len(parts) == 2:
-                        iface = parts[0].strip()
-                        vals = parts[1].split()
-                        rx_bytes = int(vals[0])
-                        tx_bytes = int(vals[8])
-                        if iface == "lo":
-                            lo_rx += rx_bytes
-                            lo_tx += tx_bytes
-                        else:
-                            wan_rx += rx_bytes
-                            wan_tx += tx_bytes
+            try:
+                wan_tx, wan_rx = 0, 0
+                lo_tx, lo_rx = 0, 0
+                with open(proc_dev, "r") as f:
+                    lines = f.readlines()[2:]
+                    for line in lines:
+                        parts = line.split(":")
+                        if len(parts) == 2:
+                            iface = parts[0].strip()
+                            vals = parts[1].split()
+                            rx_bytes = int(vals[0])
+                            tx_bytes = int(vals[8])
+                            if iface == "lo":
+                                lo_rx += rx_bytes
+                                lo_tx += tx_bytes
+                            else:
+                                wan_rx += rx_bytes
+                                wan_tx += tx_bytes
+                return {
+                    "wan_tx_bytes": wan_tx,
+                    "wan_rx_bytes": wan_rx,
+                    "loopback_tx_bytes": lo_tx,
+                    "loopback_rx_bytes": lo_rx
+                }, True
+            except Exception:
+                pass
+
         return {
-            "wan_tx_bytes": wan_tx,
-            "wan_rx_bytes": wan_rx,
-            "loopback_tx_bytes": lo_tx,
-            "loopback_rx_bytes": lo_rx
-        }
+            "wan_tx_bytes": "UNVERIFIED",
+            "wan_rx_bytes": "UNVERIFIED",
+            "loopback_tx_bytes": "UNVERIFIED",
+            "loopback_rx_bytes": "UNVERIFIED"
+        }, False
 
     def generate_attestation_record(self) -> Dict[str, Any]:
-        """Collects airgap proof metrics and cryptographically signs the record."""
+        """Collects actual measured airgap proof metrics and cryptographically signs the record."""
+        self._ensure_keys()
         with open(self.priv_key_path, "rb") as f:
             priv_key = serialization.load_pem_private_key(f.read(), password=None)
 
         timestamp = datetime.now(timezone.utc).isoformat()
-        models = self._get_model_hashes()
-        net_counters = self._get_network_counters()
+        models, models_verified = self._get_model_hashes()
+        net_counters, net_verified = self._get_network_counters(sample_interval=0.1)
+
+        # Fail-closed status logic: If network counters or Ollama inventory unavailable, status is UNVERIFIED
+        if not net_verified or not models_verified:
+            attestation_status = "UNVERIFIED"
+            operating_mode = "UNVERIFIED — NETWORK COUNTERS OR OLLAMA INVENTORY UNAVAILABLE"
+            airgap_verified = False
+        elif net_counters.get("wan_tx_bytes", 0) == 0 and net_counters.get("wan_rx_bytes", 0) == 0:
+            attestation_status = "VERIFIED_AIRGAP"
+            operating_mode = "100% SOVEREIGN AIR-GAPPED ON-PREMISE"
+            airgap_verified = True
+        else:
+            attestation_status = "EGRESS_DETECTED"
+            operating_mode = "POTENTIAL_WAN_EGRESS_DETECTED"
+            airgap_verified = False
+
+        wan_tx = net_counters.get("wan_tx_bytes", "UNVERIFIED")
+        wan_rx = net_counters.get("wan_rx_bytes", "UNVERIFIED")
+        lo_tx = net_counters.get("loopback_tx_bytes", "UNVERIFIED")
+        lo_rx = net_counters.get("loopback_rx_bytes", "UNVERIFIED")
+
+        # Populate domain egress events strictly from AirgapComplianceGuard / audit_ledger event history
+        blocked_counts = {}
+        try:
+            from security.ledger import audit_ledger
+            for rec in audit_ledger.get_all_records():
+                if rec.get("event_type") == "SECURITY_EGRESS_VIOLATION_BLOCKED":
+                    target = rec.get("tool") or "cloud_telemetry"
+                    blocked_counts[target] = blocked_counts.get(target, 0) + 1
+        except Exception:
+            pass
+
+        per_provider_egress = {}
+        for domain in ["api.openai.com", "generativelanguage.googleapis.com", "api.anthropic.com", "sentry.io / cloud_telemetry"]:
+            cnt = blocked_counts.get(domain, 0)
+            per_provider_egress[domain] = {
+                "status": "INTERCEPTOR_ENFORCED (Audit Logged)",
+                "blocked_count": cnt
+            }
+        per_provider_egress["127.0.0.1:11434 (Localhost Ollama)"] = {
+            "status": "PERMITTED_LOCAL" if models_verified else "UNVERIFIED",
+            "bytes": lo_tx
+        }
 
         attestation_payload = {
             "attestation_id": f"ATT-MRPL-{int(time.time()*1000)}",
+            "attestation_status": attestation_status,
+            "airgap_verified": airgap_verified,
             "iso_timestamp": timestamp,
             "facility": "Mangalore Refinery and Petrochemicals Limited (MRPL)",
-            "operating_mode": "100% SOVEREIGN AIR-GAPPED ON-PREMISE",
-            "ollama_endpoint": "http://127.0.0.1:11434",
+            "operating_mode": operating_mode,
+            "ollama_endpoint": os.getenv("OLLAMA_API_URL", "http://127.0.0.1:11434"),
             "sandbox_isolation": "Linux Bubblewrap Kernel Namespaces (bwrap --unshare-net)",
-            "loaded_models": models,
-            "per_provider_external_egress": {
-                "api.openai.com": {"requests": 0, "bytes": 0, "status": "BLOCKED_AIRGAP"},
-                "generativelanguage.googleapis.com": {"requests": 0, "bytes": 0, "status": "BLOCKED_AIRGAP"},
-                "api.anthropic.com": {"requests": 0, "bytes": 0, "status": "BLOCKED_AIRGAP"},
-                "sentry.io / cloud_telemetry": {"requests": 0, "bytes": 0, "status": "BLOCKED_AIRGAP"},
-                "127.0.0.1:11434 (Localhost Ollama)": {"requests": "ACTIVE", "bytes": net_counters["loopback_tx_bytes"], "status": "PERMITTED_LOCAL"}
-            },
+            "loaded_models": models if models_verified else [],
+            "per_provider_external_egress": per_provider_egress,
             "kernel_network_summary": {
-                "outbound_wan_bytes_transferred": 0,
-                "inbound_wan_bytes_received": 0,
-                "loopback_bytes_transferred": net_counters["loopback_tx_bytes"],
+                "outbound_wan_bytes_transferred": wan_tx,
+                "inbound_wan_bytes_received": wan_rx,
+                "loopback_bytes_transferred": lo_tx,
+                "loopback_bytes_received": lo_rx,
                 "firewall_enforcement": "iptables -A OUTPUT -o lo -j ACCEPT; iptables -A OUTPUT -j DROP"
             }
         }
@@ -172,11 +314,19 @@ class AirgapAttestationEngine:
         elements.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0284C7"), spaceAfter=10))
 
         # Metadata Table
+        status = record.get("attestation_status", "")
+        if status == "VERIFIED_AIRGAP":
+            operating_posture_str = "100% AIR-GAPPED (VERIFIED)"
+        elif status == "EGRESS_DETECTED":
+            operating_posture_str = "WARNING: EGRESS DETECTED"
+        else:
+            operating_posture_str = "UNVERIFIED (MEASUREMENT INCOMPLETE)"
+
         meta_data = [
             [Paragraph("<b>Certificate ID:</b>", body_style), Paragraph(record["attestation_id"], code_style)],
             [Paragraph("<b>Audit Timestamp:</b>", body_style), Paragraph(record["iso_timestamp"], body_style)],
             [Paragraph("<b>Facility Location:</b>", body_style), Paragraph(record["facility"], body_style)],
-            [Paragraph("<b>Operating Posture:</b>", body_style), Paragraph("<b>100% AIR-GAPPED (ZERO WAN EGRESS)</b>", body_style)],
+            [Paragraph("<b>Operating Posture:</b>", body_style), Paragraph(f"<b>{operating_posture_str}</b>", body_style)],
             [Paragraph("<b>Local Model Endpoint:</b>", body_style), Paragraph(record["ollama_endpoint"], code_style)],
             [Paragraph("<b>Sandbox Isolation:</b>", body_style), Paragraph(record["sandbox_isolation"], code_style)]
         ]
@@ -192,8 +342,13 @@ class AirgapAttestationEngine:
         # Model Hashes
         elements.append(Paragraph("<b>1. Verified Local Open-Weight Model Artifacts</b>", styles['Heading3']))
         model_rows = [["Model Name", "Role / Capability", "SHA-256 Fingerprint"]]
-        for m in record["loaded_models"]:
-            model_rows.append([m["name"], m["purpose"], m["sha256"][:28] + "..."])
+        if record["loaded_models"]:
+            for m in record["loaded_models"]:
+                digest = m.get("sha256", "")
+                short_dig = (digest[:28] + "...") if len(digest) > 28 else digest
+                model_rows.append([m["name"], m["purpose"], short_dig])
+        else:
+            model_rows.append(["UNVERIFIED", "Inventory Unavailable / Offline", "N/A"])
         
         t_models = Table(model_rows, colWidths=[110, 190, 240])
         t_models.setStyle(TableStyle([
@@ -211,7 +366,9 @@ class AirgapAttestationEngine:
         elements.append(Paragraph("<b>2. External Cloud Egress Monitor (Per-Provider Forensic Check)</b>", styles['Heading3']))
         egress_rows = [["Cloud Provider / API Endpoint", "Outbound Requests", "Bytes Egressed", "Air-Gap Enforcement Status"]]
         for prov, info in record["per_provider_external_egress"].items():
-            egress_rows.append([prov, str(info["requests"]), str(info["bytes"]), info["status"]])
+            req_str = str(info.get("requests", f"Blocked: {info.get('blocked_count', 0)}"))
+            bytes_str = str(info.get("bytes", "INTERCEPTED"))
+            egress_rows.append([prov, req_str, bytes_str, str(info.get("status", ""))])
             
         t_egress = Table(egress_rows, colWidths=[200, 90, 80, 170])
         t_egress.setStyle(TableStyle([

@@ -57,10 +57,17 @@ class SovereignAgentLoop:
         # 1. ROUTER PHASE
         # =========================================================================
         route_res = self.router.route(task_prompt, attached_files)
-        selected_model = self.llm.resolve_model(
-            route_res["model_id"],
-            route_res.get("fallback_tag")
-        )
+        requested_model = route_res.get("model_tag") or route_res.get("model_id", "qwen2.5:1.5b")
+        fallback_model = route_res.get("fallback_tag")
+        role = route_res.get("role_key", "general_reasoning_multimodal")
+
+        try:
+            resolved_installed_model = self.llm.resolve_model(requested_model, fallback_model)
+        except Exception:
+            resolved_installed_model = requested_model
+
+        selected_model = resolved_installed_model
+        actual_responding_model = selected_model
         task_type = route_res["task_type"]
 
         trajectory.append({
@@ -68,12 +75,30 @@ class SovereignAgentLoop:
             "phase": "ROUTER",
             "timestamp": round(time.time() - start_time, 3),
             "selected_model": selected_model,
+            "requested_model": requested_model,
+            "fallback_model": fallback_model,
+            "role": role,
             "model_alias": route_res["model_alias"],
             "task_type": task_type,
             "primary_capability": route_res.get("primary_capability", "general_reasoning"),
             "rationale": route_res["rationale"],
             "capabilities": route_res["capabilities"]
         })
+
+        audit_logger.log(
+            event="MODEL_ROUTING_RESOLVED",
+            component="CapabilityRouter",
+            session_id=session_id,
+            details={
+                "task_id": session_id,
+                "role": role,
+                "requested_model": requested_model,
+                "resolved_installed_model": resolved_installed_model,
+                "fallback_model": fallback_model,
+                "actual_responding_model": actual_responding_model
+            },
+            status="SUCCESS"
+        )
 
         # =========================================================================
         # 2. PLAN PHASE
@@ -145,7 +170,11 @@ class SovereignAgentLoop:
 
             # Step 3: Ingest & OCR
             ingest_res = file_ingest.ingest(target_file)
-            raw_findings = self.ocr.extract_inspection_findings(target_file, preprocessing_mode="standard")
+            raw_findings = self.ocr.extract_inspection_findings(
+                target_file,
+                preprocessing_mode="standard",
+                model_tag=selected_model
+            )
             if raw_findings.get("document_type") == "EMPTY_OR_UNREADABLE":
                 raise RuntimeError(f"OCR Extraction failed: {raw_findings.get('error')}")
 
@@ -154,7 +183,7 @@ class SovereignAgentLoop:
                 "phase": "ACT_TOOL_CALL",
                 "timestamp": round(time.time() - start_time, 3),
                 "tool": "file_ingest.ingest & vision_ocr.extract_inspection_findings",
-                "args": {"file": os.path.basename(target_file), "extraction_path": ingest_res["extraction_path_used"]},
+                "args": {"file": os.path.basename(target_file), "extraction_path": ingest_res["extraction_path_used"], "model_tag": selected_model},
                 "observation": f"Extracted Tag: '{raw_findings.get('equipment_tag')}', Unit: '{raw_findings.get('plant_unit')}', SHA256: {ingest_res['sha256'][:12]}..."
             })
 
@@ -167,7 +196,11 @@ class SovereignAgentLoop:
                     "reason": f"OCR confidence flags detected: {raw_findings['low_confidence_flags']}. Triggering adaptive bilateral filter.",
                     "action": "Re-run OCR with adaptive denoise filter"
                 })
-                final_findings = self.ocr.extract_inspection_findings(target_file, preprocessing_mode="enhanced_denoise")
+                final_findings = self.ocr.extract_inspection_findings(
+                    target_file,
+                    preprocessing_mode="enhanced_denoise",
+                    model_tag=selected_model
+                )
             else:
                 final_findings = raw_findings
 

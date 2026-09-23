@@ -132,10 +132,12 @@ class CapabilityRouter:
             "status": "SUCCESS",
             "active_profile": self.active_profile,
             "role_key": role_key,
+            "role": role_key,
             "model_key": role_key,
             "role_description": model_role_desc,
             "model_id": model_tag,
             "model_tag": model_tag,
+            "requested_model": model_tag,
             "model_alias": f"{model_tag} ({model_role_desc})",
             "fallback_tag": fallback_tag,
             "license": license_type,
@@ -160,7 +162,10 @@ class CapabilityRouter:
                 "attached_files": files,
                 "active_profile": self.active_profile,
                 "role_key": role_key,
+                "role": role_key,
+                "requested_model": model_tag,
                 "model_tag": model_tag,
+                "fallback_tag": fallback_tag,
                 "rationale": rationale
             },
             status="SUCCESS"

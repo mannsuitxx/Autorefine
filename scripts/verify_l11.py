@@ -223,9 +223,9 @@ def main():
     
     pdf_ok = Path(attest_pdf).exists() and (Path(attest_pdf).stat().st_size > 1000)
     all_counters_zero = (
-        attest_rec["per_provider_external_egress"]["api.openai.com"]["requests"] == 0 and
-        attest_rec["per_provider_external_egress"]["generativelanguage.googleapis.com"]["requests"] == 0 and
-        attest_rec["per_provider_external_egress"]["api.anthropic.com"]["requests"] == 0 and
+        attest_rec["per_provider_external_egress"]["api.openai.com"].get("blocked_count", 0) == 0 and
+        attest_rec["per_provider_external_egress"]["generativelanguage.googleapis.com"].get("blocked_count", 0) == 0 and
+        attest_rec["per_provider_external_egress"]["api.anthropic.com"].get("blocked_count", 0) == 0 and
         attest_rec["kernel_network_summary"]["outbound_wan_bytes_transferred"] == 0
     )
     has_sig = len(attest_rec.get("ed25519_signature", "")) == 128

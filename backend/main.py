@@ -742,7 +742,7 @@ def query_graph_rag(req: QueryGraphRequest):
     return {
         "status": "SUCCESS",
         "query": req.query,
-        "retrieval_mode": "3-Way RRF Hybrid (Vector + BM25 + KG Multi-Hop)",
+        "retrieval_mode": "3-Way RRF Hybrid (BM25 + Token Overlap + KG Multi-Hop)",
         "elapsed_ms": elapsed_ms,
         "results": res.get("results", []),
         "seed_entities": res.get("seed_entities", []),
@@ -1020,9 +1020,16 @@ def ocr_handwriting_endpoint(req: HandwritingOCRRequest):
             resolved = base_dir / fpath
             if resolved.exists():
                 fpath = str(resolved)
-        res = vision_ocr.extract_inspection_findings(fpath, preprocessing_mode=req.preprocessing_mode or "handwriting")
+        route_decision = router.route("handwriting ocr inspection sheet", attached_files=[fpath] if fpath else [])
+        vision_model_tag = route_decision.get("model_tag")
+        res = vision_ocr.extract_inspection_findings(
+            fpath,
+            preprocessing_mode=req.preprocessing_mode or "handwriting",
+            model_tag=vision_model_tag
+        )
         return {
             "status": "SUCCESS",
+            "model_used": vision_model_tag,
             "extraction": res
         }
     except Exception as e:

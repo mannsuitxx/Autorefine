@@ -26,17 +26,13 @@ const presets = {
 }
 
 const capabilities = [
-  ['Email', 'Read, summarize, draft, classify, and reply to internal email exports.'],
-  ['Calendar', 'Find conflicts, schedule meetings, and create agendas from local calendar data.'],
   ['Report generation', 'Convert raw evidence into professional operational reports.'],
   ['Data analysis', 'Analyze CSV, Excel, and database exports with traceable calculations.'],
   ['Data visualization', 'Generate charts, graphs, and dashboards from local datasets.'],
-  ['Database', 'Write SQL, query approved local databases, and explain results.'],
   ['Enterprise search', 'Search indexed manuals, SOPs, reports, and correspondence.'],
   ['Research', 'Produce cited findings from the offline knowledge base.'],
   ['Meeting analysis', 'Turn transcripts into summaries, decisions, and action items.'],
   ['Speech-to-text', 'Transcribe locally available meeting and inspection audio.'],
-  ['Text-to-speech', 'Read generated reports and instructions aloud on the workstation.'],
   ['Translation', 'Translate technical and business documents while preserving structure.'],
   ['Content writing', 'Draft reports, letters, proposals, notices, and approval notes.'],
   ['Invoice processing', 'Extract invoice fields and validate totals and metadata.'],

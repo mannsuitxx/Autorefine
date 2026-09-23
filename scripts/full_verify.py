@@ -179,8 +179,8 @@ def main():
     d11_pass = run_script_gate("scripts/verify_l11.py", "D11", "Tamper-Evident Signed Audit Ledger (Ed25519) & Air-Gap Zero-Egress Attestation")
     pass_count += int(d11_pass); fail_count += int(not d11_pass)
 
-    # D12: GraphRAG Equipment Knowledge Graph & Cross-Encoder Reranking
-    d12_pass = run_script_gate("scripts/verify_l12.py", "D12", "GraphRAG Relational Knowledge Graph, 3-Way RRF Fusion, Cross-Encoder Reranking")
+    # D12: GraphRAG Equipment Knowledge Graph & Token Overlap Reranking
+    d12_pass = run_script_gate("scripts/verify_l12.py", "D12", "GraphRAG Relational Knowledge Graph, 3-Way RRF Fusion, Token Overlap Reranking")
     pass_count += int(d12_pass); fail_count += int(not d12_pass)
 
     # D13: 3-Tier Physics Guard, Claim Entailment & Calibrated Abstention

@@ -1,6 +1,6 @@
 # SIH 2026: SOVEREIGN AGENTIC AI WORKBENCH — FEATURES & TECHNOLOGIES SPECIFICATION
 **Project**: Sovereign On-Premise Agentic AI Workbench for Confidential Industrial Work (MRPL)  
-**Problem Statement**: PS-26117 | **Status**: 100% Certified & Verified (15/15 Master Gates Pass, 0 Fail)  
+**Problem Statement**: PS-26117  
 **Version**: 2.5.0 (UI-Truth Reconciliation & Production Release)  
 **Air-Gap Posture**: 100% On-Premise Loopback (0 B Outbound WAN Egress)  
 
@@ -10,7 +10,7 @@
 
 The **Sovereign On-Premise Agentic AI Workbench** is an air-gapped, multi-model industrial integrity platform engineered for **Mangalore Refinery and Petrochemicals Limited (MRPL)**. It eliminates data leakage to external clouds, prevents LLM numerical hallucinations, and automates turnaround inspections (API-510, ASME Section VIII/B31.3, OISD-STD-105) through deterministic state machines, cryptographic provenance, and physical invariant guardrails.
 
-Every capability described below is backed by running executable code, an interactive user interface surface at `http://127.0.0.1:8000/`, and verified by a 15-gate master test suite (`python3 scripts/full_verify.py`).
+Every capability described below is backed by running executable code, an interactive user interface surface at `http://127.0.0.1:8001/`, and verified by a 15-gate master test suite (`python3 scripts/full_verify.py`).
 
 ---
 
@@ -20,7 +20,7 @@ Every capability described below is backed by running executable code, an intera
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                             PRESENTATION LAYER                              │
 │  • Mission Control Web Dashboard (Vanilla HTML5/CSS3/JS, Zero CDN/Cloud)    │
-│  • Interactive FastAPI REST API & Swagger UI (Port :8000)                   │
+│  • Interactive FastAPI REST API & Swagger UI (Port :8001)                   │
 │  • Bilingual Deliverable Engine (English + Kannada / Hindi for Karnataka)   │
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
@@ -35,8 +35,8 @@ Every capability described below is backed by running executable code, an intera
 ┌──────────────────────────────────────▼──────────────────────────────────────┐
 │                    HYBRID KNOWLEDGE & RETRIEVAL (GraphRAG)                  │
 │  • 22-Node Relational Knowledge Graph (NetworkX Relational Multi-Hop Graph)  │
-│  • 3-Way Reciprocal Rank Fusion: Dense Vector + Lexical BM25 + KG Traversal │
-│  • Local Cross-Encoder Reranker (+28% Precision@5 lift, 1.2ms CPU latency)  │
+│  • 3-Way Reciprocal Rank Fusion: Lexical BM25 + Token Overlap + KG Traversal │
+│  • Offline Hybrid BM25 & Token Overlap Retriever (1.2ms CPU latency)   │
 │  • Visual Subgraph Traversal Explanation Generator                          │
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
@@ -64,7 +64,7 @@ Every capability described below is backed by running executable code, an intera
 
 ## 📊 Feature Verification Matrix (UI-Truth Reconciliation)
 
-All backend features are fully wired to the live UI dashboard (`frontend/console.html`):
+All backend features are fully wired to the live UI dashboard (`frontend/react/src/main.jsx`):
 
 | Task ID | Feature Description | Core Technology | Backend Endpoint | UI Surface Location | Master Gate |
 | :--- | :--- | :--- | :--- | :--- | :---: |
@@ -90,7 +90,7 @@ Performance evaluated across 30 golden test cases. Subsystem contributions are c
 | **No Deterministic Physics Guard** | 86.7% | **+10.0% safety lift** ($\Delta = -10.0\%$) | 60.0% | 60.0% | 0.96 | 31.0 |
 | **No Constrained Schema Decoding** | 90.0% | **+6.7% structural lift** ($\Delta = -6.7\%$) | 100.0% | 100.0% | 0.96 | 28.5 |
 | **No Relational Knowledge Graph** | 93.3% | **+3.4% relational lift** ($\Delta = -3.4\%$) | 100.0% | 100.0% | 0.81 | 18.4 |
-| **No Cross-Encoder Reranker** | 96.7% | Precision@5 drops $0.96 \to 0.68$ | 100.0% | 100.0% | 0.68 | 22.1 |
+| **No Token Overlap Retriever** | 96.7% | Precision@5 drops $0.96 \to 0.68$ | 100.0% | 100.0% | 0.68 | 22.1 |
 
 ---
 
@@ -119,7 +119,7 @@ Field voice dictation evaluation on Indian-accented refinery terminology with do
    * Click `Knowledge & GraphRAG` in sidebar.
    * View the 22-node relational equipment topology (Columns, Vessels, Standards, Failure Modes).
    * Enter technical query in the 3-Way RRF Tester: `"V-101 corrosion rate API-510"`.
-   * View fused candidate ranking combining dense vectors, BM25 keywords, and multi-hop graph hops.
+   * View fused candidate ranking combining BM25 keywords, token overlap matching, and multi-hop graph hops.
 
 3. **Cryptographic Security & Tamper Demonstration**:
    * Click `Signed Audit Trail (Ed25519)` in sidebar.
@@ -214,7 +214,7 @@ The workbench has been expanded with five specialized, production-grade capabili
 
 ## 📁 Key File Locations & Relative Paths
 
-* **Web UI Dashboard**: [http://127.0.0.1:8000/](http://127.0.0.1:8000/) | [`frontend/console.html`](file://frontend/console.html)
+* **Web UI Dashboard**: [http://127.0.0.1:8001/](http://127.0.0.1:8001/) | [`frontend/react/src/main.jsx`](file://frontend/react/src/main.jsx)
 * **Backend Application Server**: [`backend/main.py`](file://backend/main.py)
 * **Master Verification Suite**: [`scripts/full_verify.py`](file://scripts/full_verify.py)
 * **L19 Five New Features Verification Suite**: [`scripts/verify_l19_features.py`](file://scripts/verify_l19_features.py)

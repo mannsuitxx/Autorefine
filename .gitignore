@@ -49,3 +49,8 @@ dist/
 
 # Graphify Cache
 graphify-out/cache/
+
+# Security Keys & Credentials
+security/.keys/
+data/security/*.key
+
